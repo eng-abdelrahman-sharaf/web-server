@@ -12,13 +12,14 @@ def find_file(HTTP_request , method) -> str:
     file = re.findall(  fr"(?<={method} \/).*?(?= HTTP)", HTTP_request )[0]
     return file
 
-def content_to_HTTP(content , found = True) -> str:
-        return f'HTTP/1.1 {"200 OK" if found else "404 NOT Found"}\r\n\
-        Content-Type: text/html; charset=UTF-8\r\n\r\n\
+def content_to_HTTP(content , success = True , include_content = True) -> str:
+        return f'HTTP/1.1 {"200 OK" if success else "404 NOT Found"}\r\n\
+        {"Content-Type: text/html; charset=UTF-8" if include_content else ""}\r\n\r\n\
         {content}'
 
 def HTTP_to_content(HTTP):
-    return re.findall( r"(?<=\r\n\r\n)[\s\S]*", HTTP)[0]
+    keyword = "\r\n\r\n"
+    return HTTP[find_end_of_keyword(HTTP , keyword):]
 
 def HTTP_type(HTTP):
     return HTTP[:HTTP.find(" ")]
@@ -37,6 +38,8 @@ while True:
     print(f"Connection from {client_address} has been established.")
     
     request = client_socket.recv(32768).decode('utf-8')
+
+    print(request)
 
     method = HTTP_type(request)
     if(method == "GET"):
