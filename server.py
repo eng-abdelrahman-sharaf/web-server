@@ -13,8 +13,8 @@ def find_files(HTTP_request) -> list[str]:
     return files
 
 def content_to_HTTP(content , found = True) -> str:
-        return f'HTTP/1.1 {"200 OK" if found else "404 NOT Found"}\n\
-        Content-Type: text/html; charset=utf-8\n\n\
+        return f'HTTP/1.1 {"200 OK" if found else "404 NOT Found"}\r\n\
+        Content-Type: text/html; charset=UTF-8\r\n\r\n\
         {content}'
 
 
