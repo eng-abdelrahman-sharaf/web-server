@@ -28,12 +28,12 @@ def post_req(client_socket, file_path):
     with open(file_path, 'r') as f:
         file_content = f.read()
 
-    request = (f"POST /upload HTTP/1.1\r\n"
+    request = (f"POST /{os.path.splitext(os.path.basename(file_path))[0]} HTTP/1.1\r\n"
                f"Host: localhost\r\n"
-               f"Content-Length: {len(file_content)}\r\n\r\n")
+               f"Content-Length: {len(file_content)}\r\n\r\n"
+               f"{file_content}")
 
     client_socket.sendall(request.encode())
-    client_socket.sendall(file_content)
     response = client_socket.recv(1024).decode()
 
     if "200 OK" in response:
