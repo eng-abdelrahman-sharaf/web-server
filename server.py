@@ -1,3 +1,4 @@
+#NOTE - Kindly Don't Use A Good Browser for testing
 import re, os, socket
 
 def get_file_path( file_name , ext = ".html" , dir = "./files") -> str:
