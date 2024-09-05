@@ -8,6 +8,9 @@ def get_file_path( file_name , ext = ".html" , dir = "./files") -> str:
                 return os.path.join(dir, file)
     return None
 
+def find_end_of_keyword(string , keyword) -> int:
+    return string.find(keyword) + len(keyword) - 1
+
 def find_file(HTTP_request , method) -> str:
     file = re.findall(  fr"(?<={method} \/).*?(?= HTTP)", HTTP_request )[0]
     return file
@@ -43,26 +46,37 @@ while True:
 
     method = HTTP_type(request)
     if(method == "GET"):
-        file = find_file(request , method)
-        file_path = get_file_path(file)
-        # print(file_path)
-        if(file_path == None):
-            HTTP_response = content_to_HTTP("<h1>404 Not Found</h1>", False)
-            client_socket.sendall(HTTP_response.encode('utf-8'))
-            continue
-        with open(file_path, "r") as file:
-            content = file.read()
-            # print(content)
-            HTTP_response = content_to_HTTP(content)
+        try:
+            file = find_file(request , method)
+            file_path = get_file_path(file)
+            # print(file_path)
+            if(file_path == None):
+                HTTP_response = content_to_HTTP("<h1>404 Not Found</h1>", False)
+                client_socket.sendall(HTTP_response.encode('utf-8'))
+                continue
+            with open(file_path, "r") as file:
+                content = file.read()
+                # print(content)
+                HTTP_response = content_to_HTTP(content)
+                client_socket.sendall(HTTP_response.encode('utf-8'))
+        except Exception as e:
+            print(e)
+            HTTP_response = content_to_HTTP("", success=False , include_content = False)
             client_socket.sendall(HTTP_response.encode('utf-8'))
 
     elif(method == "POST"):
-        file = find_file(request , method)
-        content = HTTP_to_content(request)
-        file_path = os.path.join("./files", file+".html")
-        with open(file_path, "w") as file:
-            file.write(content)
-        HTTP_response = content_to_HTTP("<h1>File Created</h1>")
+        try:
+            file = find_file(request , method)
+            content = HTTP_to_content(request)
+            file_path = os.path.join("./files", file+".html")
+            with open(file_path, "w") as file:
+                file.write(content)
+            HTTP_response = content_to_HTTP("" , include_content = False)
+            client_socket.sendall(HTTP_response.encode('utf-8'))
+        except Exception as e:
+            print(e)
+            HTTP_response = content_to_HTTP("" , include_content = False)
+            client_socket.sendall(HTTP_response.encode('utf-8'))
 
 
     client_socket.close()
