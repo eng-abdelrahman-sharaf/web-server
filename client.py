@@ -25,7 +25,7 @@ def post_req(client_socket, file_path):
         print(f"Error: File '{file_path}' not found.")
         return
 
-    with open(file_path, 'rb') as f:
+    with open(file_path, 'r') as f:
         file_content = f.read()
 
     request = (f"POST /upload HTTP/1.1\r\n"
