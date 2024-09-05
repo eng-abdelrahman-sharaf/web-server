@@ -48,18 +48,21 @@ def main():
     client_socket = connect_to_server(host='localhost', port=8080)
 
     while True:
-        choice = input("Enter 'GET', 'POST', or 'exit': ").strip().lower()
-        if choice == 'get':
-            save_path = input("Enter the path where you want to save the file: ")
-            file_name = input("Enter the file name to request from the server: ")
-            get_req(client_socket, save_path, file_name)
-        elif choice == 'post':
-            file_path = input("Enter the file path to upload: ")
-            post_req(client_socket, file_path)
-        elif choice == 'exit':
-            print("Closing connection...")
-            close_connection(client_socket)
-            break
+        try:
+            choice = input("Enter 'GET', 'POST', or 'exit': ").strip().lower()
+            if choice == 'get':
+                save_path = input("Enter the path where you want to save the file: ")
+                file_name = input("Enter the file name to request from the server: ")
+                get_req(client_socket, save_path, file_name)
+            elif choice == 'post':
+                file_path = input("Enter the file path to upload: ")
+                post_req(client_socket, file_path)
+            elif choice == 'exit':
+                print("Closing connection...")
+                close_connection(client_socket)
+                break
+        except Exception as e:
+            print(f"Error: {e}")
 
 if __name__ == "__main__":
     main()
