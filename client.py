@@ -7,7 +7,7 @@ def connect_to_server(host, port=8080):
     return client_socket
 
 def get_req(client_socket, save_path, file_name):
-    request = f"GET {file_name} HTTP/1.1\r\nHost: localhost\r\n\r\n"
+    request = f"GET /{file_name} HTTP/1.1\r\nHost: localhost\r\n\r\n"
     client_socket.send(request.encode())
     response = client_socket.recv(1024).decode()
     header, body = response.split('\r\n\r\n', 1)
