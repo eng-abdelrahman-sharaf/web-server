@@ -1,7 +1,7 @@
 #NOTE - Kindly Don't Use A Good Browser for testing
 import re, os, socket
 
-def get_file_path( file_name , ext = ".html" , dir = "./files") -> str:
+def get_file_path( file_name , ext = ".html" , dir = "./ServerFiles") -> str:
     for file in os.listdir(dir):
         if file.endswith(ext):
             if file == file_name+ext:
@@ -34,50 +34,54 @@ def init_server( HOST, PORT):
     print(f"Server started on port {PORT}...")
     return server_socket
 
-server_socket = init_server("localhost", 8080)
+def handle_get_request(client_socket, request):
+    try:
+        file = find_file(request, "GET")
+        file_path = get_file_path(file)
+        if file_path is None:
+            send_response(client_socket, "<h1>404 Not Found</h1>", success=False)
+            return
+        with open(file_path, "r") as file:
+            content = file.read()
+            send_response(client_socket, content)
+    except Exception as e:
+        print(e)
+        send_response(client_socket, "", success=False, include_content=False)
 
-while True:
-    client_socket, client_address = server_socket.accept()
-    print(f"Connection from {client_address} has been established.")
+def handle_post_request(client_socket, request):
+    try:
+        file = find_file(request, "POST")
+        content = HTTP_to_content(request)
+        file_path = os.path.join("./ServerFiles", file + ".html")
+        with open(file_path, "w") as file:
+            file.write(content)
+        send_response(client_socket, "", include_content=False)
+    except Exception as e:
+        print(e)
+        send_response(client_socket, "", include_content=False)
+
+def send_response(client_socket, content, success=True, include_content=True):
+    HTTP_response = content_to_HTTP(content, success, include_content)
+    client_socket.sendall(HTTP_response.encode('utf-8'))
     
-    request = client_socket.recv(32768).decode('utf-8')
-
-    print(request)
-
-    method = HTTP_type(request)
-    if(method == "GET"):
-        try:
-            file = find_file(request , method)
-            file_path = get_file_path(file)
-            # print(file_path)
-            if(file_path == None):
-                HTTP_response = content_to_HTTP("<h1>404 Not Found</h1>", False)
-                client_socket.sendall(HTTP_response.encode('utf-8'))
-                continue
-            with open(file_path, "r") as file:
-                content = file.read()
-                # print(content)
-                HTTP_response = content_to_HTTP(content)
-                client_socket.sendall(HTTP_response.encode('utf-8'))
-        except Exception as e:
-            print(e)
-            HTTP_response = content_to_HTTP("", success=False , include_content = False)
-            client_socket.sendall(HTTP_response.encode('utf-8'))
-
-    elif(method == "POST"):
-        try:
-            file = find_file(request , method)
-            content = HTTP_to_content(request)
-            file_path = os.path.join("./files", file+".html")
-            with open(file_path, "w") as file:
-                file.write(content)
-            HTTP_response = content_to_HTTP("" , include_content = False)
-            client_socket.sendall(HTTP_response.encode('utf-8'))
-        except Exception as e:
-            print(e)
-            HTTP_response = content_to_HTTP("" , include_content = False)
-            client_socket.sendall(HTTP_response.encode('utf-8'))
-
-
-    client_socket.close()
+def main():
     
+    server_socket = init_server("localhost", 8080)
+    
+    while True:
+        client_socket, client_address = server_socket.accept()
+        print(f"Connection from {client_address} has been established.")
+        
+        request = client_socket.recv(32768).decode('utf-8')
+        # print(request)
+
+        method = HTTP_type(request)
+        if method == "GET":
+            handle_get_request(client_socket, request)
+        elif method == "POST":
+            handle_post_request(client_socket, request)
+
+        client_socket.close()
+
+if __name__ == "__main__":
+    main()
